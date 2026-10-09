@@ -226,6 +226,18 @@ type proxyProtocolConn struct {
 	fallbackable       bool
 }
 
+// NetConn returns the net.Conn this connection wraps. It is intended for
+// callers that need connection-level capabilities outside the net.Conn
+// interface, for example syscall.Conn to inspect the underlying file
+// descriptor.
+//
+// Do not read from the returned connection while using the PROXY protocol
+// connection, because reads must go through this wrapper so the header is
+// parsed and stripped exactly once. Use the wrapper's own methods for I/O.
+func (c *proxyProtocolConn) NetConn() net.Conn {
+	return c.Conn
+}
+
 func (c *proxyProtocolConn) readClientAddrBehindProxy(connRemoteAddr net.Addr) error {
 	return c.parseHeader(connRemoteAddr)
 }
